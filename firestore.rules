@@ -1,0 +1,22 @@
+rules_version = '2';
+
+service cloud.firestore {
+  match /databases/{database}/documents {
+    
+    // Default Deny: Disallow all unauthenticated or unmatched access
+    match /{document=**} {
+      allow read, write: if false;
+    }
+
+    // Owner-Isolated Workspace Access
+    // Users can only read and write data inside their own isolated namespace
+    match /users/{userId} {
+      allow read, write: if request.auth != null && request.auth.uid == userId;
+
+      // Allow owner full access to all nested collections (accounts, transactions, tasks, notes, etc.)
+      match /{allSubcollections=**} {
+        allow read, write: if request.auth != null && request.auth.uid == userId;
+      }
+    }
+  }
+}

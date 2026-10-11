@@ -1,0 +1,17 @@
+rules_version = '2';
+
+service firebase.storage {
+  match /b/{bucket}/o {
+    
+    // Default Deny: Disallow all unauthenticated or unmatched access
+    match /{allPaths=**} {
+      allow read, write: if false;
+    }
+
+    // Owner-Isolated Private Document Storage
+    // Only the authenticated user can access their private folder
+    match /users/{userId}/{allUserFiles=**} {
+      allow read, write: if request.auth != null && request.auth.uid == userId;
+    }
+  }
+}
